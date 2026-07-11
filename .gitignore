@@ -31,3 +31,35 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Maven
+target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+
+# Maven Wrapper cache
+.mvn/wrapper/maven-wrapper.jar
+
+# Temporary files
+*.tmp
+*.swp

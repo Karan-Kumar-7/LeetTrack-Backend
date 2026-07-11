@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest {
+public class MonthlyActivityResponse {
 
-    private String email;
-    private String password;
+    private int month;
+    private long count;
 }

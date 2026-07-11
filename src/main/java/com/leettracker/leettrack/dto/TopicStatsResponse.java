@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest {
+public class TopicStatsResponse {
 
-    private String email;
-    private String password;
+    private String topic;
+    private long count;
 }
