@@ -264,4 +264,15 @@ public class ProblemServiceImpl implements ProblemService {
         return problemRepository.getDifficultyStats(user);
     }
 
+    @Override
+    public ProblemResponse getProblemByID(Long id) {
+
+        User user = getCurrentUser();
+
+        Problem problem = problemRepository.findByIdAndUser(id, user)
+                .orElseThrow(() -> new ResourceNotFoundException("Problem not found"));
+
+        return mapToResponse(problem);
+    }
+
 }

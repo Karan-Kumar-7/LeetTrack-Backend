@@ -7,3 +7,11 @@ export const getProblems = (page = 0, size = 10) => {
 export const addProblem = (problem) => {
     return api.post("/problems", problem);
 };
+
+export const getProblem = (id) => {
+    return api.get(`/problems/${id}`);
+};
+
+export const updateProblem = (id, problem) => {
+    return api.put(`/problems/${id}`, problem);
+};

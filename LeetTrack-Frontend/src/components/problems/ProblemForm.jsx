@@ -1,10 +1,12 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
-function ProblemForm({ onSubmit, loading }) {
+function ProblemForm({ onSubmit, loading, defaultValues}) {
 
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors },
     } = useForm({
         defaultValues: {
@@ -12,6 +14,14 @@ function ProblemForm({ onSubmit, loading }) {
             favorite: false,
         },
     });
+
+    useEffect(() => {
+
+        if (defaultValues) {
+
+            reset(defaultValues);
+        }
+    }, [defaultValues, reset]);
 
     return (
 

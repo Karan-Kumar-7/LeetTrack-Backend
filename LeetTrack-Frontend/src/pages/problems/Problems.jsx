@@ -65,20 +65,19 @@ function Problems() {
 
             <div className="overflow-x-auto">
 
-                <table className="w-full bg-slate-800 rounded-xl overflow-hidden">
+                <table className="w-full table-auto bg-slate-800 rounded-xl overflow-hidden">
 
                     <thead className="bg-slate-700">
 
-                    <tr>
-
-                        <th className="p-4 text-left text-white">LeetCode ID</th>
-                        <th className="p-4 text-left text-white">Title</th>
-                        <th className="p-4 text-left text-white">Difficulty</th>
-                        <th className="p-4 text-left text-white">Topic</th>
-                        <th className="p-4 text-left text-white">Solved Date</th>
-                        <th className="p-4 text-center text-white">Favorite</th>
-
-                    </tr>
+                        <tr>
+                            <th className="w-24 p-4 text-left text-white">LeetCode ID</th>
+                            <th className="w-64 p-4 text-left text-white">Title</th>
+                            <th className="w-32 p-4 text-left text-white">Difficulty</th>
+                            <th className="w-48 p-4 text-left text-white">Topic</th>
+                            <th className="w-40 p-4 text-left text-white">Solved Date</th>
+                            <th className="w-24 p-4 text-center text-white">Favorite</th>
+                            <th className="w-32 p-4 text-center text-white">Actions</th>
+                        </tr>
 
                     </thead>
 
@@ -127,6 +126,17 @@ function Problems() {
                             <td className="p-4 text-center text-yellow-400 text-xl">
 
                                 {problem.favorite ? "⭐" : "☆"}
+
+                            </td>
+
+                            <td className="p-4 text-center">
+
+                                <Link
+                                    to={`/problems/edit/${problem.id}`}
+                                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                                >
+                                    Edit
+                                </Link>
 
                             </td>
 

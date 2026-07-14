@@ -158,4 +158,14 @@ public class ProblemController {
 
         return problemService.getDifficultyDistribution();
     }
+    @Operation(
+            summary = "Get problem by id",
+            description = "Returns a single solved problem."
+    )
+    @GetMapping("/{id}")
+    public ProblemResponse getProblemByID(@PathVariable Long id) {
+
+        return problemService.getProblemByID(id);
+
+    }
 }

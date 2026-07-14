@@ -38,4 +38,5 @@ public interface ProblemService {
 
     DifficultyDistributionResponse getDifficultyDistribution();
 
+    ProblemResponse getProblemByID(Long id);
 }

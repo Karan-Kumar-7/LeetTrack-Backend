@@ -5,6 +5,7 @@ import Register from "../pages/auth/Register";
 import Dashboard from "../pages/dashboard/Dashboard";
 import Problems from "../pages/problems/Problems.jsx";
 import AddProblem from "../pages/problems/AddProblems";
+import EditProblem from "../pages/problems/EditProblem";
 
 function AppRoutes() {
     return (
@@ -22,6 +23,11 @@ function AppRoutes() {
                 <Route path="/problems" element={<Problems />} />
 
                 <Route path="/problems/add" element={<AddProblem />} />
+
+                <Route
+                    path="/problems/edit/:id"
+                    element={<EditProblem />}
+                />
 
             </Routes>
         </BrowserRouter>
