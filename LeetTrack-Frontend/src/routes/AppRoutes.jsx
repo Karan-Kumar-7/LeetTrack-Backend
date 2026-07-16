@@ -6,6 +6,7 @@ import Dashboard from "../pages/dashboard/Dashboard";
 import Problems from "../pages/problems/Problems.jsx";
 import AddProblem from "../pages/problems/AddProblems";
 import EditProblem from "../pages/problems/EditProblem";
+import ProblemDetails from "../pages/problems/ProblemDetails.jsx";
 
 function AppRoutes() {
     return (
@@ -27,6 +28,11 @@ function AppRoutes() {
                 <Route
                     path="/problems/edit/:id"
                     element={<EditProblem />}
+                />
+
+                <Route
+                    path="/problems/:id"
+                    element={<ProblemDetails />}
                 />
 
             </Routes>

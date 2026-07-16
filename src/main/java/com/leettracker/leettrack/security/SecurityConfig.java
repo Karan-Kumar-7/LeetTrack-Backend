@@ -53,6 +53,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
         configuration.setAllowedMethods(List.of(
                 "GET",
+                "PATCH",
                 "POST",
                 "PUT",
                 "DELETE",

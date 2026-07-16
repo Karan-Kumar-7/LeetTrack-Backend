@@ -1,5 +1,6 @@
 package com.leettracker.leettrack.dto;
 
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,4 +31,13 @@ public class ProblemRequest {
     private LocalDate solvedDate;
 
     private boolean favorite;
+
+    @Column(length = 3000)
+    private String notes;
+
+    private String timeComplexity;
+
+    private String spaceComplexity;
+
+    private String problemLink;
 }

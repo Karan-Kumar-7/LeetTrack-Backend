@@ -32,4 +32,13 @@ public class Problem {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Column(length = 3000)
+    private String notes;
+
+    private String timeComplexity;
+
+    private String spaceComplexity;
+
+    private String problemLink;
 }

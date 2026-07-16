@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 
 import "./index.css";
 import App from "./App";
+import "./style/heatmap.css";
 
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";

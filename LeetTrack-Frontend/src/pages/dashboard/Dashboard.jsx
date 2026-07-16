@@ -1,14 +1,27 @@
 import { useEffect, useState } from "react";
-import { FaBookOpen, FaFire, FaTrophy } from "react-icons/fa";
-import { MdCheckCircle } from "react-icons/md";
-import { BsBarChartFill } from "react-icons/bs";
 import Navbar from "../../components/Navbar";
 import { getDashboard } from "../../services/dashboardService";
+import DifficultyChart from "../../components/DifficultyChart";
+import MonthlyChart from "../../components/MonthlyChart";
+import RecentProblems from "../../components/RecentProblems";
+import FavoriteProblems from "../../components/FavoriteProblems";
+import {
+    BookOpen,
+    Flame,
+    Trophy,
+    Star
+} from "lucide-react";
+
+import DashboardCard from "../../components/DashboardCard";
+import { getHeatmap } from "../../services/problemService";
+import HeatmapChart from "../../components/HeatmapChart";
+import {data} from "react-router-dom";
 
 function Dashboard() {
 
     const [dashboard, setDashboard] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [heatmapData, setHeatmapData] = useState([]);
 
     useEffect(() => {
 
@@ -17,6 +30,10 @@ function Dashboard() {
             try {
 
                 const response = await getDashboard();
+
+                const heatmap = await getHeatmap();
+
+                setHeatmapData(heatmap.data);
 
                 setDashboard(response.data);
 
@@ -64,48 +81,96 @@ function Dashboard() {
                     Dashboard
                 </h1>
 
-                <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-8">
 
-                    <StatCard
-                        title="Solved"
+                    <DashboardCard
+                        title="Solved Problems"
                         value={dashboard.totalSolved}
-                        icon={<FaBookOpen />}
                         color="bg-cyan-500"
+                        icon={<BookOpen size={30} color="white" />}
                     />
 
-                    <StatCard
-                        title="Easy"
-                        value={dashboard.difficultyDistribution.easy}
-                        icon={<MdCheckCircle />}
-                        color="bg-green-500"
-                    />
-
-                    <StatCard
-                        title="Medium"
-                        value={dashboard.difficultyDistribution.medium}
-                        icon={<BsBarChartFill />}
-                        color="bg-yellow-500"
-                    />
-
-                    <StatCard
-                        title="Hard"
-                        value={dashboard.difficultyDistribution.hard}
-                        icon={<FaBookOpen />}
-                        color="bg-red-500"
-                    />
-
-                    <StatCard
-                        title="Current"
+                    <DashboardCard
+                        title="Current Streak"
                         value={dashboard.streak.currentStreak}
-                        icon={<FaFire />}
                         color="bg-orange-500"
+                        icon={<Flame size={30} color="white" />}
                     />
 
-                    <StatCard
-                        title="Longest"
+                    <DashboardCard
+                        title="Longest Streak"
                         value={dashboard.streak.longestStreak}
-                        icon={<FaTrophy />}
                         color="bg-purple-500"
+                        icon={<Trophy size={30} color="white" />}
+                    />
+
+                    <DashboardCard
+                        title="Favorites"
+                        value={dashboard.favorites.length}
+                        color="bg-yellow-500"
+                        icon={<Star size={30} color="white" />}
+                    />
+
+                </div>
+
+                <div className="flex justify-between items-center mb-6">
+
+                    <h2 className="text-2xl font-bold text-white">
+                        Solving Activity
+                    </h2>
+
+                    <p className="text-slate-400">
+
+                        {(Array.isArray(data) ? data : []).reduce(
+                            (sum, day) => sum + day.count,
+                            0
+                        )}
+                        {" "}problems solved this year
+
+                    </p>
+
+                </div>
+
+                <HeatmapChart data={heatmapData} />
+
+                <div className="flex justify-end items-center gap-2 mt-5 text-slate-300 text-sm">
+
+                    <span>Less</span>
+
+                    <div className="w-4 h-4 rounded bg-slate-700"></div>
+
+                    <div className="w-4 h-4 rounded bg-green-900"></div>
+
+                    <div className="w-4 h-4 rounded bg-green-700"></div>
+
+                    <div className="w-4 h-4 rounded bg-green-500"></div>
+
+                    <div className="w-4 h-4 rounded bg-green-400"></div>
+
+                    <span>More</span>
+
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-10">
+
+                    <DifficultyChart
+                        data={dashboard.difficultyDistribution}
+                    />
+
+                    <MonthlyChart
+                        data={dashboard.monthlyActivity}
+                    />
+
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-10">
+
+                    <RecentProblems
+                        problems={dashboard.recentFive}
+                    />
+
+                    <FavoriteProblems
+                        problems={dashboard.favorites}
                     />
 
                 </div>

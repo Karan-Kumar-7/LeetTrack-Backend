@@ -12,8 +12,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.*;
+import jakarta.servlet.http.HttpServletResponse;
+import java.awt.Color;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.io.PrintWriter;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +48,11 @@ public class ProblemServiceImpl implements ProblemService {
                 problem.getDifficulty(),
                 problem.getTopic(),
                 problem.getSolvedDate(),
-                problem.isFavorite()
+                problem.isFavorite(),
+                problem.getNotes(),
+                problem.getTimeComplexity(),
+                problem.getSpaceComplexity(),
+                problem.getProblemLink()
         );
     }
 
@@ -58,29 +69,71 @@ public class ProblemServiceImpl implements ProblemService {
         problem.setTopic(request.getTopic());
         problem.setSolvedDate(request.getSolvedDate());
         problem.setFavorite(request.isFavorite());
-
         problem.setUser(user);
+        problem.setNotes(request.getNotes());
+        problem.setTimeComplexity(request.getTimeComplexity());
+        problem.setSpaceComplexity(request.getSpaceComplexity());
+        problem.setProblemLink(
+                generateProblemLink(request.getTitle())
+        );
 
         problemRepository.save(problem);
     }
 
     @Override
-    public Page<ProblemResponse> getMyProblems(Pageable pageable) {
+    public Page<ProblemResponse> getMyProblems(
+            Pageable pageable,
+            String title,
+            String difficulty) {
 
         User user = getCurrentUser();
 
-        Page<Problem> problems =
-                problemRepository.findByUser(user, pageable);
+        Page<Problem> problems;
 
-        return problems.map(problem -> new ProblemResponse(
-                problem.getId(),
-                problem.getLeetcodeId(),
-                problem.getTitle(),
-                problem.getDifficulty(),
-                problem.getTopic(),
-                problem.getSolvedDate(),
-                problem.isFavorite()
-        ));
+        boolean hasTitle =
+                title != null && !title.trim().isEmpty();
+
+        boolean hasDifficulty =
+                difficulty != null &&
+                        !difficulty.trim().isEmpty() &&
+                        !difficulty.equalsIgnoreCase("ALL");
+
+        if (hasTitle && hasDifficulty) {
+
+            problems = problemRepository
+                    .findByUserAndTitleContainingIgnoreCaseAndDifficulty(
+                            user,
+                            title,
+                            difficulty,
+                            pageable
+                    );
+
+        } else if (hasTitle) {
+
+            problems = problemRepository
+                    .findByUserAndTitleContainingIgnoreCase(
+                            user,
+                            title,
+                            pageable
+                    );
+
+        } else if (hasDifficulty) {
+
+            problems = problemRepository
+                    .findByUserAndDifficulty(
+                            user,
+                            difficulty,
+                            pageable
+                    );
+
+        } else {
+
+            problems = problemRepository
+                    .findByUser(user, pageable);
+
+        }
+
+        return problems.map(this::mapToResponse);
     }
 
     @Override
@@ -97,6 +150,12 @@ public class ProblemServiceImpl implements ProblemService {
         problem.setTopic(request.getTopic());
         problem.setSolvedDate(request.getSolvedDate());
         problem.setFavorite(request.isFavorite());
+        problem.setNotes(request.getNotes());
+        problem.setTimeComplexity(request.getTimeComplexity());
+        problem.setSpaceComplexity(request.getSpaceComplexity());
+        problem.setProblemLink(
+                generateProblemLink(request.getTitle())
+        );
 
         problemRepository.save(problem);
     }
@@ -273,6 +332,188 @@ public class ProblemServiceImpl implements ProblemService {
                 .orElseThrow(() -> new ResourceNotFoundException("Problem not found"));
 
         return mapToResponse(problem);
+    }
+
+    private String generateProblemLink(String title) {
+
+        return "https://leetcode.com/problems/"
+                + title.toLowerCase()
+                .replace(" ", "-")
+                .replace(",", "")
+                .replace("'", "")
+                .replace("(", "")
+                .replace(")", "")
+                + "/";
+    }
+
+    @Override
+    public void exportCsv(HttpServletResponse response) throws IOException {
+
+        User user = getCurrentUser();
+
+        List<Problem> problems = problemRepository.findByUser(user);
+
+        response.setContentType("text/csv");
+        response.setHeader(
+                "Content-Disposition",
+                "attachment; filename=leetcode-problems.csv"
+        );
+
+        PrintWriter writer = response.getWriter();
+
+        writer.println("LeetCode ID,Title,Difficulty,Topic,Solved Date,Favorite,Time Complexity,Space Complexity,Notes");
+
+        for (Problem problem : problems) {
+
+            writer.printf(
+                    "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
+                    problem.getLeetcodeId(),
+                    problem.getTitle(),
+                    problem.getDifficulty(),
+                    problem.getTopic(),
+                    problem.getSolvedDate(),
+                    problem.isFavorite() ? "Yes" : "No",
+                    problem.getTimeComplexity() == null ? "" : problem.getTimeComplexity(),
+                    problem.getSpaceComplexity() == null ? "" : problem.getSpaceComplexity(),
+                    problem.getNotes() == null ? "" : problem.getNotes().replace("\"", "\"\"")
+            );
+
+        }
+
+        writer.flush();
+
+    }
+
+    private void addTableHeader(PdfPTable table, String text) {
+
+        PdfPCell cell = new PdfPCell();
+
+        cell.setBackgroundColor(new Color(6, 182, 212));
+
+        cell.setPadding(8);
+
+        Font font = new Font(
+                Font.HELVETICA,
+                12,
+                Font.BOLD,
+                Color.WHITE
+        );
+
+        cell.setPhrase(new Phrase(text, font));
+
+        table.addCell(cell);
+    }
+
+    @Override
+    public void exportPdf(HttpServletResponse response) throws IOException {
+
+        User user = getCurrentUser();
+
+        List<Problem> problems = problemRepository.findByUser(user);
+
+        response.setContentType("application/pdf");
+        response.setHeader(
+                "Content-Disposition",
+                "attachment; filename=LeetTrack_Report.pdf"
+        );
+
+        Document document = new Document(PageSize.A4);
+        PdfWriter.getInstance(document, response.getOutputStream());
+
+        document.open();
+
+        Font titleFont = new Font(Font.HELVETICA, 22, Font.BOLD);
+        Font headingFont = new Font(Font.HELVETICA, 14, Font.BOLD);
+        Font normalFont = new Font(Font.HELVETICA, 12);
+
+        Paragraph title = new Paragraph("LeetTrack Report", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+
+        document.add(title);
+        document.add(new Paragraph(" "));
+
+        document.add(new Paragraph(
+                "Total Problems Solved : " + problemRepository.countByUser(user),
+                headingFont
+        ));
+
+        document.add(new Paragraph(
+                "Favorite Problems : " + problemRepository.countByUserAndFavoriteTrue(user),
+                headingFont
+        ));
+
+        document.add(new Paragraph(" "));
+
+        document.add(new Paragraph("User: " + user.getName(), headingFont));
+        document.add(new Paragraph("Email: " + user.getEmail(), normalFont));
+        document.add(new Paragraph(" "));
+
+        PdfPTable table = new PdfPTable(6);
+
+        table.setWidthPercentage(100);
+
+        table.setSpacingBefore(15);
+
+        table.setWidths(new float[]{
+                1.2f,
+                3.5f,
+                2f,
+                2f,
+                2.5f,
+                1.2f
+        });
+
+        addTableHeader(table, "ID");
+        addTableHeader(table, "Title");
+        addTableHeader(table, "Difficulty");
+        addTableHeader(table, "Topic");
+        addTableHeader(table, "Solved Date");
+        addTableHeader(table, "★");
+
+        for (Problem problem : problems) {
+
+            table.addCell(String.valueOf(problem.getLeetcodeId()));
+
+            table.addCell(problem.getTitle());
+
+            table.addCell(problem.getDifficulty());
+
+            table.addCell(problem.getTopic());
+
+            table.addCell(problem.getSolvedDate().toString());
+
+            table.addCell(problem.isFavorite() ? "⭐" : "");
+
+        }
+
+        document.add(table);
+
+        document.close();
+
+    }
+
+    @Override
+    public List<HeatmapResponse> getHeatmapData() {
+
+        User user = getCurrentUser();
+
+        List<Object[]> results = problemRepository.getHeatmap(user);
+
+        List<HeatmapResponse> response = new ArrayList<>();
+
+        for (Object[] row : results) {
+
+            response.add(
+                    new HeatmapResponse(
+                            (LocalDate) row[0],
+                            (Long) row[1]
+                    )
+            );
+
+        }
+
+        return response;
+
     }
 
 }

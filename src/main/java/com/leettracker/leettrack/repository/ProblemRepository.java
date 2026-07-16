@@ -22,6 +22,8 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
 
     long countByUser(User user);
 
+    List<Problem> findByUser(User user);
+
     List<Problem> findByUserAndTitleContainingIgnoreCase(User user, String title);
 
     List<Problem> findByUserAndFavoriteTrue(User user);
@@ -70,4 +72,34 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
     DifficultyDistributionResponse getDifficultyStats(@org.springframework.data.repository.query.Param("user") User user);
 
     List<Problem> findTop5ByUserOrderBySolvedDateDesc(User user);
+
+    Page<Problem> findByUserAndTitleContainingIgnoreCase(
+            User user,
+            String title,
+            Pageable pageable
+    );
+
+    Page<Problem> findByUserAndDifficulty(
+            User user,
+            String difficulty,
+            Pageable pageable
+    );
+
+    Page<Problem> findByUserAndTitleContainingIgnoreCaseAndDifficulty(
+            User user,
+            String title,
+            String difficulty,
+            Pageable pageable
+    );
+
+    String countByUserAndFavoriteTrue(User user);
+
+    @Query("""
+SELECT p.solvedDate, COUNT(p)
+FROM Problem p
+WHERE p.user = :user
+GROUP BY p.solvedDate
+ORDER BY p.solvedDate
+""")
+    List<Object[]> getHeatmap(User user);
 }

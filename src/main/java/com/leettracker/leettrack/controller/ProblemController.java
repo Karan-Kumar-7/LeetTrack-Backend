@@ -4,6 +4,7 @@ import com.leettracker.leettrack.dto.*;
 import com.leettracker.leettrack.service.ProblemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -55,8 +57,12 @@ public class ProblemController {
             description = "Returns all solved problems belonging to the authenticated user."
     )
     @GetMapping
-    public Page<ProblemResponse> getMyProblems(Pageable pageable) {
-        return problemService.getMyProblems(pageable);
+    public Page<ProblemResponse> getMyProblems(
+            Pageable pageable,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String difficulty) {
+
+        return problemService.getMyProblems(pageable, title, difficulty);
     }
 
     @Operation(
@@ -158,6 +164,7 @@ public class ProblemController {
 
         return problemService.getDifficultyDistribution();
     }
+
     @Operation(
             summary = "Get problem by id",
             description = "Returns a single solved problem."
@@ -168,4 +175,31 @@ public class ProblemController {
         return problemService.getProblemByID(id);
 
     }
+
+    @GetMapping("/export")
+    public void exportProblems(HttpServletResponse response) throws IOException {
+
+        problemService.exportCsv(response);
+
+    }
+
+    @GetMapping("/export/pdf")
+    public void exportPdf(HttpServletResponse response) throws IOException {
+
+        problemService.exportPdf(response);
+
+    }
+
+    @GetMapping("/heatmap")
+    public List<HeatmapResponse> getHeatmap() {
+
+        return problemService.getHeatmapData();
+
+    }
+
+//    @GetMapping("/profile")
+//    public ProfileResponse getProfile() {
+//        return problemService.getProfile();
+//    }
+
 }
